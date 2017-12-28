@@ -16,13 +16,11 @@
         <p class="error">{{empty_title_error}}</p>
 
         
-        <p>
-            <label>Your new blog:</label>
-        </p>
+        <p><label>Your new blog:</label></p>
 
         <textarea name="body">{{ request.form['body'] }}</textarea>
         
-        <p class="error">{{empty_blog_error}}</p>
+        <p class="error">{{empty_body_error}}</p>
         
         <p>
             <input type="submit" value="Add Entry" />
