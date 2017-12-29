@@ -30,6 +30,10 @@
                 margin: 0 auto;
                 padding: 10px;
             }
+            #flash_error{
+                list-style: none;
+                color:green;
+            }
         </style>
 </head>
 
@@ -50,6 +54,13 @@
             <li><a href='/newpost'>new post</a></li>
         </ul>
     </nav>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+            <ul>
+            {% for category,message in messages %}
+                <li class="{{category}}" id="flash_error">{{message}}</li>
+            {% endfor %}
+            </ul>
+        {% endwith %}
 
     {% block content %}
     {% endblock %}

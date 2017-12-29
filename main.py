@@ -32,6 +32,11 @@ class User(db.Model):
         self.username = username
         self.password = password
 
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'signup']
+ #   if request.endpoint not in allowed_routes and 'username' not in session:
+ #       return redirect('/login')
 
 @app.route('/')
 def index():
@@ -58,17 +63,25 @@ def valid_length(text):
 @app.route('/login', methods = ['POST', 'GET'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
+        username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(email=email).first()
-        if user and user.password == password:
-            session['email'] = email
-            flash('Logged in')
-            return redirect('/')
-        else:
-            flash('User password doesn\'t match','error' )
+        user = User.query.filter_by(username=username).first()
+        password_error = ''
+        username_error = ''
 
+        if user and user.password == password:
+            session['username'] = username
+            flash('LOGGED IN')
+            return redirect('/newpost')
+        if user and not user.password == password:
+            password_error = 'Password is incorrect'
+            return render_template('login.html',password_error=password_error)
+        if not user:
+            username_error = 'Username doesn\'t exist'
+            return render_template('login.html',username_error=username_error)
+            
     return render_template('login.html')
+    
 
 @app.route('/signup', methods = ['POST', 'GET'])
 def register():
@@ -93,17 +106,22 @@ def register():
         if is_empty(verify) or password != verify:
             verify_error = 'Passwords don\'t match'
 
-    existing_user = User.query.filter_by(username=username).first()
-
-    if request.method == 'POST' and not username_error and not password_error and not verify_error and not username_error and not existing_user:       
-        new_user = User(username, password)
-        db.session.add(new_user)
-        db.session.commit()
-        session['username'] = username
-        return redirect('/')
+        existing_user = User.query.filter_by(username=username).first()
+        
+        if username_error == '' and password_error == '' and verify_error == '':
+            if not existing_user:       
+                new_user = User(username, password)
+                db.session.add(new_user)
+                db.session.commit()
+                session['username'] = username
+                return redirect('/')
+            else:
+                username_exist = "Username already exist"
+                return render_template('signup.html', username_error=username_exist)
+        else:
+            return render_template('/signup.html', username_error = username_error, password_error = password_error, verify_error = verify_error)
     else:
-        #TODO - user already exist
-        return render_template('/signup.html', username_error = username_error, password_error = password_error, verify_error = verify_error)
+        return render_template('signup.html')
 
 
 @app.route('/newpost', methods=['POST','GET'])
@@ -132,6 +150,11 @@ def new_blog():
     else:
         return render_template('/newpost.html',empty_title_error=empty_title_error,empty_body_error=empty_body_error)
 
+@app.route('/logout')
+def logout():
+    del session['username']
+    flash("LOGGED OUT")
+    return redirect('/')
 
 @app.route('/post')
 def post():
