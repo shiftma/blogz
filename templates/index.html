@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Blog users!</h1>
+<ul style="list-style-type: circle;">
+        {% for user in list_of_users %}
+        <li style="padding-bottom:10px; ">
+                <a href="/blog?user={{user.username}}"style="text-decoration: underline;">{{user.username}}
+        </li>
+            
+         {% endfor %}
+</ul>
+
+{% endblock %}
